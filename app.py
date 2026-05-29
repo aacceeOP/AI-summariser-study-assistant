@@ -7,3 +7,5 @@ if uploaded_file:
     st.write(content)
 
 question = st.text_input("Ask a question")
+if question:
+    st.write("You asked: {temp_1}".format(temp_1 = question))
