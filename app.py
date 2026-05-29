@@ -1,5 +1,9 @@
 import streamlit as st
 st.title("AI study assistant")
-st.write("Upload your notes and ask questions.")
+uploaded_file = st.file_uploader("Upload your notes", type = ["txt"])
+if uploaded_file:
+    content = uploaded_file.read().decode()
+    st.subheader("Your Notes")
+    st.write(content)
 
 question = st.text_input("Ask a question")
