@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import ask_gemini, summarise_notes
+from utils import ask_gemini, summarise_notes, generate_quiz
 
 st.title("AI study assistant")
 uploaded_file = st.file_uploader("Upload your notes", type = ["txt"])
@@ -21,3 +21,10 @@ if uploaded_file:
 
         st.subheader("Summary")
         st.write(summary)
+
+    if st.button("Generate quiz"):
+        with st.spinner("Creating quiz..."):
+            quiz = generate_quiz(content)
+
+        st.subheader("Quiz")
+        st.write(quiz)

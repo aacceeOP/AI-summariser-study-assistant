@@ -40,3 +40,20 @@ Notes:
 
     return response.text
 
+
+def generate_quiz(notes):
+    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    prompt = f"""
+Create a short quiz from these notes.
+
+Include 
+- 5 questions
+- A mix of mcq and short answer questions
+- answers at the bottom
+
+Notes:
+{notes}
+"""
+    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+
+    return response.text
