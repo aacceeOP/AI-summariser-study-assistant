@@ -11,5 +11,6 @@ if uploaded_file:
     question = st.text_input("Ask a question")
     if question:
         st.write("You asked: {temp_1}".format(temp_1 = question))
-        answer = ask_gemini(content, question)
+        with st.spinner("Thinking..."):
+            answer = ask_gemini(content, question)
         st.write("Answer: {answers}".format(answers = answer))
