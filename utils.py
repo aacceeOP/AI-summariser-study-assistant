@@ -21,3 +21,22 @@ Question:
     response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
 
     return response.text
+
+
+def summarise_notes(notes):
+    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    prompt = f"""
+Summarise these notes for a student. 
+
+Include 
+1. Key ideas
+2. Important definitions
+3. Things to remember
+
+Notes:
+{notes}
+"""
+    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+
+    return response.text
+
