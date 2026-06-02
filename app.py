@@ -1,5 +1,6 @@
 import streamlit as st
 from utils import ask_gemini, summarise_notes, generate_quiz
+from pypdf import PdfReader
 
 if "summary" not in st.session_state:
     st.session_state.summary = ""
@@ -9,10 +10,19 @@ if "quiz" not in st.session_state:
 
 
 st.title("AI study assistant")
-uploaded_file = st.file_uploader("Upload your notes", type = ["txt"])
+uploaded_file = st.file_uploader("Upload your notes", type = ["txt", "pdf"])
 if uploaded_file:
-    content = uploaded_file.read().decode()#("utf8")
-    #st.subheader("Your Notes")
+    if uploaded_file.name.endswith(".txt"):
+        content = uploaded_file.read().decode()
+
+    elif uploaded_file.name.endswith(".pdf"):
+        pdf = PdfReader(uploaded_file)
+
+        content = ""
+        for page in pdf.pages:
+            content += page.extract_text() + "\n"
+
+            
     st.text_area("Your Notes", content, height = 300)
 
     question = st.text_input("Ask a question")
