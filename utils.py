@@ -57,3 +57,37 @@ Notes:
     response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
 
     return response.text
+
+
+def generate_mcq(notes):
+    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    prompt = f"""
+Create one multiple choice question from these notes. 
+all 4 options must be distinct.
+only one option may be correct. 
+
+Retrun only in this exact format:
+QUESTION:
+<question>
+
+A:
+<option A>
+
+B:
+<option B>
+
+C:
+<option C>
+
+D:
+<option D>
+
+ANSWER:
+<correct option letter>
+
+Notes:
+{notes}
+"""
+    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+
+    return response.text
