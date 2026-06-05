@@ -117,16 +117,16 @@ if uploaded_file:
         st.subheader("Summary")
         st.write(st.session_state.summary)
 
-    if st.button("Generate quiz"):
+    if st.button("Generate study quiz"):
         with st.spinner("Creating quiz..."):
             quiz = generate_quiz(content)
             st.session_state.quiz = quiz
 
     if st.session_state.quiz:
         st.subheader("Quiz")
-        st.write(st.session_state.quiz)
+        st.markdown(st.session_state.quiz)
 
-    if st.button("Generate MCQ"):
+    if st.button("start interactive Quiz"):
         with st.spinner("Creating MCQ..."):
             st.session_state.mcq = generate_mcq(content)
             st.session_state.current_question = 0
@@ -140,6 +140,23 @@ if uploaded_file:
         
         mcq_list = parse_mcq(st.session_state.mcq)
         current_index = st.session_state.current_question
+        
+        if current_index >= len(mcq_list):
+            st.subheader("Quiz Complete!")
+            st.write(f"Final Score: {st.session_state.score} / {len(mcq_list)}")
+
+            if st.button("Generate new Quiz"):
+                with st.spinner("Creating new quiz..."):
+                    st.session_state.mcq = generate_mcq(content)
+                    
+
+                st.session_state.current_question = 0
+                st.session_state.score = 0
+                st.session_state.answered = False
+                st.session_state.last_correct = None
+                st.rerun()
+            st.stop()
+
         current_mcq = mcq_list[current_index]
 
         st.write(f"Score: {st.session_state.score} / {len(mcq_list)}")

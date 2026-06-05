@@ -51,6 +51,23 @@ Include
 - A mix of mcq and short answer questions
 - answers at the bottom
 
+for the mcq questions, please make it so that its in this format
+
+QUESTION:
+<question>
+
+A:
+<option A>
+
+B:
+<option B>
+
+C:
+<option C>
+
+D:
+<option D>
+
 Notes:
 {notes}
 """
