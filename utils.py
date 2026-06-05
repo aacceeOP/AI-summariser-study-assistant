@@ -62,7 +62,7 @@ Notes:
 def generate_mcq(notes):
     client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
     prompt = f"""
-Create one multiple choice question from these notes. 
+Create 5 multiple choice question from these notes. 
 all 4 options must be distinct.
 only one option may be correct. 
 

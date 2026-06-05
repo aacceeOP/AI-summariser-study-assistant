@@ -11,8 +11,22 @@ if "quiz" not in st.session_state:
 if "mcq" not in st.session_state:
     st.session_state.mcq = ""
 
+if "current_question" not in st.session_state:
+    st.session_state.current_question = 0
+
+if "score" not in st.session_state:
+    st.session_state.score = 0
+
+if "answered" not in st.session_state:
+    st.session_state.answered = False
+
+if "last_correct" not in st.session_state:
+    st.session_state.last_correct = None
+
 def parse_mcq(mcq_text):
     lines = mcq_text.split("\n")
+    
+    questions = []
     question = ""
     options = {}
     answer = ""
@@ -26,8 +40,13 @@ def parse_mcq(mcq_text):
             continue
 
         if line.startswith("QUESTION:"):
+            if question and options and answer:
+                questions.append({"question": question, "options": options, "answer": answer.strip()})
             current_key = "QUESTION"
             question = line.replace("QUESTION:", "").strip()
+            options = {}
+            answer = ""
+            
 
         elif line.startswith("A:"):
             current_key = "A"
@@ -56,8 +75,11 @@ def parse_mcq(mcq_text):
                 options[current_key] += " " + line
             elif current_key == "ANSWER":
                 answer += line.strip()
+
+    if question and options and answer:
+        questions.append({"question": question, "options": options, "answer": answer.strip()})
         
-    return question, options, answer
+    return questions
 
 
 
@@ -107,17 +129,48 @@ if uploaded_file:
     if st.button("Generate MCQ"):
         with st.spinner("Creating MCQ..."):
             st.session_state.mcq = generate_mcq(content)
+            st.session_state.current_question = 0
+            st.session_state.score = 0
+            st.session_state.answered = False
+            st.session_state.last_correct = None
+            
 
     if st.session_state.mcq:
         st.subheader("Interactive Quiz")
         
-        mcq_question, mcq_options, correct_answer = parse_mcq(st.session_state.mcq)
-        st.write(mcq_question)
-        selected_answer = st.radio("Choose your answer:", ["A", "B", "C", "D"], format_func = lambda option: f"{option}: {mcq_options.get(option, "")}" )
+        mcq_list = parse_mcq(st.session_state.mcq)
+        current_index = st.session_state.current_question
+        current_mcq = mcq_list[current_index]
 
-        if st.button("Check answer"):
-            if selected_answer == correct_answer.strip():
+        st.write(f"Score: {st.session_state.score} / {len(mcq_list)}")
+        st.write(f"Question {current_index + 1} of {len(mcq_list)}")
+        st.write(current_mcq["question"])
+
+        selected_answer = st.radio("Choose your answer:", ["A", "B", "C", "D"], format_func = lambda option: f"{option}: {current_mcq["options"].get(option, "")}" )
+
+        if not st.session_state.answered:
+            if st.button("Check answer"):
+
+                correct_answer = current_mcq["answer"].strip()
+                if selected_answer == correct_answer:
+                    st.session_state.score += 1
+                    st.session_state.last_correct = True
+
+                else:
+                    st.session_state.last_correct = False
+                
+                st.session_state.answered = True
+                st.rerun()
+
+        else:
+            if st.session_state.last_correct:
                 st.success("Correct!")
-
             else:
-                st.error(f"Incorrect. The correct answer is {correct_answer}.")
+                st.error(f"Incorrect. The correct answer is {current_mcq["answer"]}.")
+            
+            if st.button("Next question"):
+                st.session_state.current_question += 1
+                st.session_state.answered = False
+                st.session_state.last_correct = None
+                st.rerun()
+                    
