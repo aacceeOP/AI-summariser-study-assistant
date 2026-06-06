@@ -121,7 +121,14 @@ if uploaded_file:
 
     with tab1:
         question = st.text_input("Ask a question")
-        if st.button ("Ask"):
+        col1, col2 = st.columns(2)
+        with col1:
+            ask_clicked = st.button("Ask")
+        with col2:
+            clear_clicked = st.button("Clear")
+
+
+        if ask_clicked:
             if question:
                 st.write("You asked: {temp_1}".format(temp_1 = question))
                 with st.spinner("Thinking..."):
@@ -135,7 +142,7 @@ if uploaded_file:
                 st.write(f"**AI:** {chat['answer']}")      
                 st.divider()
 
-        if st.button("Clear Chat"):
+        if clear_clicked:
             st.session_state.chat_history = []
             st.rerun()          
 
