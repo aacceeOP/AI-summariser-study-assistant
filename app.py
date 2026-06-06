@@ -121,7 +121,7 @@ if uploaded_file:
 
     with tab1:
         question = st.text_input("Ask a question")
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
             ask_clicked = st.button("Ask")
         with col2:
