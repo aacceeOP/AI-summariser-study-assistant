@@ -129,6 +129,8 @@ if uploaded_file:
             summary = summarise_notes(content)
             st.session_state.summary = summary
 
+            st.download_button(label = "Download Summary", data = st.session_state.summary, file_name = "summary.txt", mime = "text/plain")
+
     if st.session_state.summary:
         st.subheader("Summary")
         st.write(st.session_state.summary)
@@ -137,6 +139,8 @@ if uploaded_file:
         with st.spinner("Creating quiz..."):
             quiz = generate_quiz(content)
             st.session_state.quiz = quiz
+
+            st.download_button(label = "Download Study Quiz", data = st.session_state.quiz, file_name = "study_quiz.txt", mime = "text/plain")
 
     if st.session_state.quiz:
         st.subheader("Quiz")
