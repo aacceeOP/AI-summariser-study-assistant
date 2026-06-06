@@ -90,7 +90,11 @@ def parse_mcq(mcq_text):
 
 st.title("AI study assistant")
 uploaded_file = st.file_uploader("Upload your notes", type = ["txt", "pdf"])
+
+
+
 if uploaded_file:
+
     if uploaded_file.name.endswith(".txt"):
         content = uploaded_file.read().decode()
 
@@ -101,113 +105,127 @@ if uploaded_file:
         for page in pdf.pages:
             content += page.extract_text() + "\n"
 
-
-    st.text_area("Your Notes", content, height = 300)
-
-    question = st.text_input("Ask a question")
-    if st.button ("Ask"):
-        if question:
-            st.write("You asked: {temp_1}".format(temp_1 = question))
-            with st.spinner("Thinking..."):
-                answer = ask_gemini(content, question)
-            st.session_state.chat_history.append({"question": question, "answer": answer})
-
-    if st.session_state.chat_history:
-        st.subheader("Chat History")
-        for chat in st.session_state.chat_history:
-            st.write(f"**You:** {chat["question"]}")
-            st.write(f"**AI:** {chat["answer"]}")      
-            st.divider()
-
-    if st.button("Clear Chat"):
-        st.session_state.chat_history = []
-        st.rerun()          
+    with st.expander("📚 View Notes"):
+        st.text_area("Your Notes", content, height = 300)
 
 
-    if st.button("Summarise notes"):
-        with st.spinner("Summarising..."):
-            summary = summarise_notes(content)
-            st.session_state.summary = summary
+    tab1, tab2, tab3, tab4 = st.tabs(
+    [
+        "❓ Ask Questions",
+        "📄 Summary",
+        "📝 Study Quiz",
+        "🎯 Interactive Quiz"
+    ])
 
-            st.download_button(label = "Download Summary", data = st.session_state.summary, file_name = "summary.txt", mime = "text/plain")
+    
 
-    if st.session_state.summary:
-        st.subheader("Summary")
-        st.write(st.session_state.summary)
+    with tab1:
+        question = st.text_input("Ask a question")
+        if st.button ("Ask"):
+            if question:
+                st.write("You asked: {temp_1}".format(temp_1 = question))
+                with st.spinner("Thinking..."):
+                    answer = ask_gemini(content, question)
+                st.session_state.chat_history.append({"question": question, "answer": answer})
 
-    if st.button("Generate study quiz"):
-        with st.spinner("Creating quiz..."):
-            quiz = generate_quiz(content)
-            st.session_state.quiz = quiz
+        if st.session_state.chat_history:
+            st.subheader("Chat History")
+            for chat in st.session_state.chat_history:
+                st.write(f"**You:** {chat['question']}")
+                st.write(f"**AI:** {chat['answer']}")      
+                st.divider()
 
-            st.download_button(label = "Download Study Quiz", data = st.session_state.quiz, file_name = "study_quiz.txt", mime = "text/plain")
+        if st.button("Clear Chat"):
+            st.session_state.chat_history = []
+            st.rerun()          
 
-    if st.session_state.quiz:
-        st.subheader("Quiz")
-        st.markdown(st.session_state.quiz)
+    with tab2:
+        if st.button("Summarise notes"):
+            with st.spinner("Summarising..."):
+                summary = summarise_notes(content)
+                st.session_state.summary = summary
 
-    if st.button("start interactive Quiz"):
-        with st.spinner("Creating MCQ..."):
-            st.session_state.mcq = generate_mcq(content)
-            st.session_state.current_question = 0
-            st.session_state.score = 0
-            st.session_state.answered = False
-            st.session_state.last_correct = None
-            
+                st.download_button(label = "Download Summary", data = st.session_state.summary, file_name = "summary.txt", mime = "text/plain")
 
-    if st.session_state.mcq:
-        st.subheader("Interactive Quiz")
-        
-        mcq_list = parse_mcq(st.session_state.mcq)
-        current_index = st.session_state.current_question
-        
-        if current_index >= len(mcq_list):
-            st.subheader("Quiz Complete!")
-            st.write(f"Final Score: {st.session_state.score} / {len(mcq_list)}")
+        if st.session_state.summary:
+            st.subheader("Summary")
+            st.write(st.session_state.summary)
 
-            if st.button("Generate new Quiz"):
-                with st.spinner("Creating new quiz..."):
-                    st.session_state.mcq = generate_mcq(content)
-                    
+    with tab3:
+        if st.button("Generate study quiz"):
+            with st.spinner("Creating quiz..."):
+                quiz = generate_quiz(content)
+                st.session_state.quiz = quiz
 
+                st.download_button(label = "Download Study Quiz", data = st.session_state.quiz, file_name = "study_quiz.txt", mime = "text/plain")
+
+        if st.session_state.quiz:
+            st.subheader("Quiz")
+            st.markdown(st.session_state.quiz)
+
+    with tab4:
+        if st.button("start interactive Quiz"):
+            with st.spinner("Creating MCQ..."):
+                st.session_state.mcq = generate_mcq(content)
                 st.session_state.current_question = 0
                 st.session_state.score = 0
                 st.session_state.answered = False
                 st.session_state.last_correct = None
-                st.rerun()
-            st.stop()
-
-        current_mcq = mcq_list[current_index]
-
-        st.write(f"Score: {st.session_state.score} / {len(mcq_list)}")
-        st.write(f"Question {current_index + 1} of {len(mcq_list)}")
-        st.write(current_mcq["question"])
-
-        selected_answer = st.radio("Choose your answer:", ["A", "B", "C", "D"], format_func = lambda option: f"{option}: {current_mcq["options"].get(option, "")}" )
-
-        if not st.session_state.answered:
-            if st.button("Check answer"):
-
-                correct_answer = current_mcq["answer"].strip()
-                if selected_answer == correct_answer:
-                    st.session_state.score += 1
-                    st.session_state.last_correct = True
-
-                else:
-                    st.session_state.last_correct = False
                 
-                st.session_state.answered = True
-                st.rerun()
 
-        else:
-            if st.session_state.last_correct:
-                st.success("Correct!")
-            else:
-                st.error(f"Incorrect. The correct answer is {current_mcq["answer"]}.")
+        if st.session_state.mcq:
+            st.subheader("Interactive Quiz")
             
-            if st.button("Next question"):
-                st.session_state.current_question += 1
-                st.session_state.answered = False
-                st.session_state.last_correct = None
-                st.rerun()
+            mcq_list = parse_mcq(st.session_state.mcq)
+            current_index = st.session_state.current_question
+            
+            if current_index >= len(mcq_list):
+                st.subheader("Quiz Complete!")
+                st.write(f"Final Score: {st.session_state.score} / {len(mcq_list)}")
+
+                if st.button("Generate new Quiz"):
+                    with st.spinner("Creating new quiz..."):
+                        st.session_state.mcq = generate_mcq(content)
+                        
+
+                    st.session_state.current_question = 0
+                    st.session_state.score = 0
+                    st.session_state.answered = False
+                    st.session_state.last_correct = None
+                    st.rerun()
+                st.stop()
+
+            current_mcq = mcq_list[current_index]
+
+            st.write(f"Score: {st.session_state.score} / {len(mcq_list)}")
+            st.write(f"Question {current_index + 1} of {len(mcq_list)}")
+            st.write(current_mcq["question"])
+
+            selected_answer = st.radio("Choose your answer:", ["A", "B", "C", "D"], format_func = lambda option: f"{option}: {current_mcq['options'].get(option, '')}" )
+
+            if not st.session_state.answered:
+                if st.button("Check answer"):
+
+                    correct_answer = current_mcq["answer"].strip()
+                    if selected_answer == correct_answer:
+                        st.session_state.score += 1
+                        st.session_state.last_correct = True
+
+                    else:
+                        st.session_state.last_correct = False
+                    
+                    st.session_state.answered = True
+                    st.rerun()
+
+            else:
+                if st.session_state.last_correct:
+                    st.success("Correct!")
+                else:
+                    st.error(f"Incorrect. The correct answer is {current_mcq['answer']}.")
+                
+                if st.button("Next question"):
+                    st.session_state.current_question += 1
+                    st.session_state.answered = False
+                    st.session_state.last_correct = None
+                    st.rerun()
                     
