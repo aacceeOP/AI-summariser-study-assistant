@@ -23,6 +23,9 @@ if "answered" not in st.session_state:
 if "last_correct" not in st.session_state:
     st.session_state.last_correct = None
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 def parse_mcq(mcq_text):
     lines = mcq_text.split("\n")
     
@@ -102,11 +105,24 @@ if uploaded_file:
     st.text_area("Your Notes", content, height = 300)
 
     question = st.text_input("Ask a question")
-    if question:
-        st.write("You asked: {temp_1}".format(temp_1 = question))
-        with st.spinner("Thinking..."):
-            answer = ask_gemini(content, question)
-        st.write("Answer: {answers}".format(answers = answer))
+    if st.button ("Ask"):
+        if question:
+            st.write("You asked: {temp_1}".format(temp_1 = question))
+            with st.spinner("Thinking..."):
+                answer = ask_gemini(content, question)
+            st.session_state.chat_history.append({"question": question, "answer": answer})
+
+    if st.session_state.chat_history:
+        st.subheader("Chat History")
+        for chat in st.session_state.chat_history:
+            st.write(f"**You:** {chat["question"]}")
+            st.write(f"**AI:** {chat["answer"]}")      
+            st.divider()
+
+    if st.button("Clear Chat"):
+        st.session_state.chat_history = []
+        st.rerun()          
+
 
     if st.button("Summarise notes"):
         with st.spinner("Summarising..."):
