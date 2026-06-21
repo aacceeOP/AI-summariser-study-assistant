@@ -99,11 +99,22 @@ if uploaded_file:
         content = uploaded_file.read().decode()
 
     elif uploaded_file.name.endswith(".pdf"):
-        pdf = PdfReader(uploaded_file)
+        try:
+            pdf = PdfReader(uploaded_file)
 
-        content = ""
-        for page in pdf.pages:
-            content += page.extract_text() + "\n"
+            content = ""
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text is not None:
+                    content += text + "\n"
+
+        except Exception:
+            st.error("Unable to read this PDF. Please upload a different PDF file.")
+            st.stop()
+
+    if not content.strip():
+        st.error("The uploaded file appears to be empty.")
+        st.stop()
 
     with st.expander("📚 View Notes"):
         st.text_area("Your Notes", content, height = 300)

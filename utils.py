@@ -4,8 +4,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+MODEL_NAME = "gemini-2.5-flash"
+def call_gemini(prompt):
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
+
+        if not api_key:
+            return "ERROR: GEMINI API KEY IS MISSING."
+        
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(model = MODEL_NAME, contents = prompt)
+        return response.text
+    except Exception:
+        return "ERROR: GEMINI IS CURRENTLY UNAVAILABLE. PLEASE TRY AGAIN LATER."
+
 def ask_gemini(notes, question):
-    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    
 
     prompt = f"""
 You are a helpful study assitant.
@@ -18,13 +33,13 @@ Notes:
 Question:
 {question}
 """
-    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+   
 
-    return response.text
+    return call_gemini(prompt)
 
 
 def summarise_notes(notes):
-    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+   
     prompt = f"""
 Summarise these notes for a student. 
 
@@ -36,13 +51,13 @@ Include
 Notes:
 {notes}
 """
-    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+    
 
-    return response.text
+    return call_gemini(prompt)
 
 
 def generate_quiz(notes):
-    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    
     prompt = f"""
 Create a short quiz from these notes.
 
@@ -71,13 +86,13 @@ D:
 Notes:
 {notes}
 """
-    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+    
 
-    return response.text
+    return call_gemini(prompt)
 
 
 def generate_mcq(notes):
-    client = genai.Client(api_key = os.getenv("GEMINI_API_KEY"))
+    
     prompt = f"""
 Create 5 multiple choice question from these notes. 
 all 4 options must be distinct.
@@ -105,6 +120,6 @@ ANSWER:
 Notes:
 {notes}
 """
-    response = client.models.generate_content(model = "gemini-2.5-flash", contents = prompt)
+    
 
-    return response.text
+    return call_gemini(prompt)
