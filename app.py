@@ -144,7 +144,10 @@ if uploaded_file:
                 st.write("You asked: {temp_1}".format(temp_1 = question))
                 with st.spinner("Thinking..."):
                     answer = ask_gemini(content, question)
-                st.session_state.chat_history.append({"question": question, "answer": answer})
+                if answer.startswith("ERROR:"):
+                    st.error(answer)
+                else:
+                    st.session_state.chat_history.append({"question": question, "answer": answer})
 
         if st.session_state.chat_history:
             st.subheader("Chat History")
@@ -161,34 +164,46 @@ if uploaded_file:
         if st.button("Summarise notes"):
             with st.spinner("Summarising..."):
                 summary = summarise_notes(content)
-                st.session_state.summary = summary
+                if summary.startswith("ERROR:"):
+                    st.error(summary)
+                else:
+                    st.session_state.summary = summary
 
-                st.download_button(label = "Download Summary", data = st.session_state.summary, file_name = "summary.txt", mime = "text/plain")
+                
 
         if st.session_state.summary:
             st.subheader("Summary")
             st.write(st.session_state.summary)
+            st.download_button(label = "Download Summary", data = st.session_state.summary, file_name = "summary.txt", mime = "text/plain")
 
     with tab3:
         if st.button("Generate study quiz"):
             with st.spinner("Creating quiz..."):
                 quiz = generate_quiz(content)
-                st.session_state.quiz = quiz
+                if quiz.startswith("ERROR:"):
+                    st.error(quiz)
+                else:
+                    st.session_state.quiz = quiz
 
-                st.download_button(label = "Download Study Quiz", data = st.session_state.quiz, file_name = "study_quiz.txt", mime = "text/plain")
+                
 
         if st.session_state.quiz:
             st.subheader("Quiz")
             st.markdown(st.session_state.quiz)
+            st.download_button(label = "Download Study Quiz", data = st.session_state.quiz, file_name = "study_quiz.txt", mime = "text/plain")
 
     with tab4:
         if st.button("start interactive Quiz"):
             with st.spinner("Creating MCQ..."):
-                st.session_state.mcq = generate_mcq(content)
-                st.session_state.current_question = 0
-                st.session_state.score = 0
-                st.session_state.answered = False
-                st.session_state.last_correct = None
+                mcq = generate_mcq(content)
+                if mcq.startswith("ERROR:"):
+                    st.error(mcq)
+                else:
+                    st.session_state.mcq = mcq
+                    st.session_state.current_question = 0
+                    st.session_state.score = 0
+                    st.session_state.answered = False
+                    st.session_state.last_correct = None
                 
 
         if st.session_state.mcq:
@@ -203,14 +218,16 @@ if uploaded_file:
 
                 if st.button("Generate new Quiz"):
                     with st.spinner("Creating new quiz..."):
-                        st.session_state.mcq = generate_mcq(content)
-                        
-
-                    st.session_state.current_question = 0
-                    st.session_state.score = 0
-                    st.session_state.answered = False
-                    st.session_state.last_correct = None
-                    st.rerun()
+                        mcq = generate_mcq(content)
+                        if mcq.startswith("ERROR:"):
+                            st.error(mcq)
+                        else:
+                            st.session_state.mcq = mcq
+                            st.session_state.current_question = 0
+                            st.session_state.score = 0
+                            st.session_state.answered = False
+                            st.session_state.last_correct = None
+                            st.rerun()
                 st.stop()
 
             current_mcq = mcq_list[current_index]
