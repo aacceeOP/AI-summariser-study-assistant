@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import ask_gemini, summarise_notes, generate_quiz, generate_mcq, generate_flashcards
+from utils import ask_gemini, summarise_notes, generate_quiz, generate_mcq, generate_flashcards, parse_flashcards
 from pypdf import PdfReader
 
 if "summary" not in st.session_state:
@@ -311,6 +311,34 @@ if uploaded_files:
                     st.session_state.show_answer = False
                     st.rerun()
 
-            st.subheader("Raw Flashcards Output")
-            st.write(st.session_state.flashcards)
+            # st.subheader("Raw Flashcards Output")
+            # st.write(st.session_state.flashcards)
+
+            cards = parse_flashcards(st.session_state.flashcards)
+            current_card = cards[st.session_state.current_card]
+            st.write(f"Card {st.session_state.current_card + 1} of {len(cards)}")
+            st.subheader("Question")
+            st.write(current_card["front"])
+
+            if not st.session_state.show_answer:
+                if st.button("Show Answer"):
+                    st.session_state.show_answer = True
+                    st.rerun()
+
+            if st.session_state.show_answer:
+                st.subheader("Answer")
+                st.write(current_card["back"])
                     
+
+            col1, col2, col3 = st.columns([1, 1, 6])
+            with col1:
+                if st.button("previous") and st.session_state.current_card > 0:
+                    st.session_state.current_card -= 1
+                    st.session_state.show_answer = False
+                    st.rerun()
+
+            with col2:
+                if st.button("Next") and st.session_state.current_card < len(cards) - 1:
+                    st.session_state.current_card += 1
+                    st.session_state.show_answer = False
+                    st.rerun()

@@ -149,3 +149,15 @@ Notes:
 """
 
     return call_gemini(prompt)
+
+
+def parse_flashcards(flashcards_text):
+    cards = []
+    blocks = flashcards_text.split("FRONT:")
+    for block in blocks[1:]:
+        if "BACK:" in block:
+            front, back = block.split("BACK:", 1)
+
+            cards.append({"front": front.strip(), "back": back.strip()})
+
+    return cards
