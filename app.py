@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import ask_gemini, summarise_notes, generate_quiz, generate_mcq
+from utils import ask_gemini, summarise_notes, generate_quiz, generate_mcq, generate_flashcards
 from pypdf import PdfReader
 
 if "summary" not in st.session_state:
@@ -25,6 +25,15 @@ if "last_correct" not in st.session_state:
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+
+if "flashcards" not in st.session_state:
+    st.session_state.flashcards = ""
+
+if "current_card" not in st.session_state:
+    st.session_state.current_card = 0
+
+if "show_answer" not in st.session_state:
+    st.session_state.show_answer = False
 
 def parse_mcq(mcq_text):
     lines = mcq_text.split("\n")
@@ -127,13 +136,12 @@ if uploaded_files:
         st.text_area("Your Notes", content, height = 300)
 
 
-    tab1, tab2, tab3, tab4 = st.tabs(
-    [
-        "❓ Ask Questions",
-        "📄 Summary",
-        "📝 Study Quiz",
-        "🎯 Interactive Quiz"
-    ])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "❓ Ask Questions",
+    "📄 Summary",
+    "📝 Study Quiz",
+    "🎯 Interactive Quiz",
+    "🗂 Flashcards"])
 
     
 
@@ -270,4 +278,39 @@ if uploaded_files:
                     st.session_state.answered = False
                     st.session_state.last_correct = None
                     st.rerun()
+
+    
+    with tab5:
+        if not st.session_state.flashcards:
+
+            if st.button("Generate Flashcards"):
+                with st.spinner("Creating flascards..."):
+                    flashcards = generate_flashcards(content)
+
+                if flashcards.startswith("ERROR:"):
+                    st.error(flashcards)
+
+                else:
+                    st.session_state.flashcards = flashcards
+                    st.session_state.current_card = 0
+                    st.session_state.show_answer = False
+                    st.session_state.show_answer = False
+                    st.rerun()
+
+            
+        else:
+            if st.button("Generate New Flashcards"):
+                with st.spinner("Creating new flashcards..."):
+                    flashcards = generate_flashcards(content)
+
+                if flashcards.startswith("ERROR:"):
+                    st.error(flashcards)
+                else:
+                    st.session_state.flashcards = flashcards
+                    st.session_state.current_card = 0
+                    st.session_state.show_answer = False
+                    st.rerun()
+
+            st.subheader("Raw Flashcards Output")
+            st.write(st.session_state.flashcards)
                     

@@ -123,3 +123,29 @@ Notes:
     
 
     return call_gemini(prompt)
+
+
+
+def generate_flashcards(notes):
+    prompt = f"""
+Create 10 flashcards from these notes.
+
+return only in this exact format:
+
+FRONT:
+<question or term>
+
+BACK:
+<answer or explanation>
+
+FRONT:
+<question or term>
+
+BACK:
+<answer or explanation>
+
+Notes:
+{notes}
+"""
+
+    return call_gemini(prompt)
