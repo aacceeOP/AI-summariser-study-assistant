@@ -89,32 +89,39 @@ def parse_mcq(mcq_text):
 
 
 st.title("AI study assistant")
-uploaded_file = st.file_uploader("Upload your notes", type = ["txt", "pdf"])
+uploaded_files = st.file_uploader("Upload your notes", type = ["txt", "pdf"], accept_multiple_files = True)
 
 
 
-if uploaded_file:
+if uploaded_files:
+    content = ""
+    for uploaded_file in uploaded_files:
 
-    if uploaded_file.name.endswith(".txt"):
-        content = uploaded_file.read().decode()
+        if uploaded_file.name.endswith(".txt"):
+            file_content = uploaded_file.read().decode()
+            content += f"\n\n---{uploaded_file.name} ---\n\n"
+            content += file_content
 
-    elif uploaded_file.name.endswith(".pdf"):
-        try:
-            pdf = PdfReader(uploaded_file)
+        elif uploaded_file.name.endswith(".pdf"):
+            try:
+                pdf = PdfReader(uploaded_file)
 
-            content = ""
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text is not None:
-                    content += text + "\n"
+                file_content = ""
+                for page in pdf.pages:
+                    text = page.extract_text()
+                    if text is not None:
+                        file_content += text + "\n"
 
-        except Exception:
-            st.error("Unable to read this PDF. Please upload a different PDF file.")
+                content += f"\n\n---{uploaded_file.name} ---\n\n"
+                content += file_content
+
+            except Exception:
+                st.error("Unable to read {uploaded_file.name}.")
+                st.stop()
+
+        if not content.strip():
+            st.error("The uploaded file appears to be empty.")
             st.stop()
-
-    if not content.strip():
-        st.error("The uploaded file appears to be empty.")
-        st.stop()
 
     with st.expander("📚 View Notes"):
         st.text_area("Your Notes", content, height = 300)
