@@ -20,15 +20,29 @@ def call_gemini(prompt):
         return "ERROR: GEMINI IS CURRENTLY UNAVAILABLE. PLEASE TRY AGAIN LATER."
 
 def ask_gemini(notes, question):
+    relevant_chunks = retrieve_relevant_chunks(notes, question)
+
+    print("=" * 50)
+    print("Retrieved Chunks:")
+    for i, chunk in enumerate(relevant_chunks):
+        print(f"\nChunk {i+1}:\n")
+        print(chunk[:300])
+    print("=" * 50)
     
+    if not relevant_chunks:
+        return "I couldn't find anything related to your question in the uploaded notes."
+    
+    context = "\n\n".join(relevant_chunks)
 
     prompt = f"""
 You are a helpful study assitant.
 
-Use only the notes below to answer the question 
+Use only the notes below to answer the question.
 
-Notes:
-{notes}
+if the answer is not found in the contexxt, simply say that it is not available in the uploaded notes. do not make up information. 
+
+Context:
+{context}
 
 Question:
 {question}
@@ -161,3 +175,37 @@ def parse_flashcards(flashcards_text):
             cards.append({"front": front.strip(), "back": back.strip()})
 
     return cards
+
+
+
+def split_into_chunks(text, chunk_size=1000):
+    chunks = []
+
+    for start in range(0, len(text), chunk_size):
+        chunk = text[start:start+chunk_size]
+        chunks.append(chunk)
+
+    return chunks
+
+def retrieve_relevant_chunks(notes, question, top_k = 3):
+    chunks = split_into_chunks(notes)
+    
+    question_words = question.lower().split()
+
+    scored_chunks = []
+
+    for chunk in chunks:
+        chunk_lower = chunk.lower()
+
+        score = 0
+
+        for word in question_words:
+            if word in chunk_lower:
+                score += 1
+
+        scored_chunks.append((score, chunk))
+    scored_chunks.sort(key = lambda item: item[0], reverse = True)
+
+    relevant_chunks = [chunk for score, chunk in scored_chunks[:top_k] if score > 0]
+
+    return relevant_chunks
