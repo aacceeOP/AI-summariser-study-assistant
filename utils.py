@@ -22,12 +22,6 @@ def call_gemini(prompt):
 def ask_gemini(notes, question):
     relevant_chunks = retrieve_relevant_chunks(notes, question)
 
-    print("=" * 50)
-    print("Retrieved Chunks:")
-    for i, chunk in enumerate(relevant_chunks):
-        print(f"\nChunk {i+1}:\n")
-        print(chunk[:300])
-    print("=" * 50)
     
     if not relevant_chunks:
         return "I couldn't find anything related to your question in the uploaded notes."
@@ -190,7 +184,23 @@ def split_into_chunks(text, chunk_size=1000):
 def retrieve_relevant_chunks(notes, question, top_k = 3):
     chunks = split_into_chunks(notes)
     
-    question_words = question.lower().split()
+    stop_words = {
+    "a", "an", "and", "are", "as", "at", "be", "by",
+    "for", "from", "how", "in", "is", "it", "of", "on",
+    "or", "the", "to", "what", "when", "where", "which",
+    "who", "why", "with"
+}
+
+    question_words = [
+        word.strip(".,?!:;()[]{}\"'")
+        for word in question.lower().split()
+    ]
+
+    question_words = [
+        word
+        for word in question_words
+        if word and word not in stop_words
+]
 
     scored_chunks = []
 
