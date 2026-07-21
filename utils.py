@@ -172,14 +172,23 @@ def parse_flashcards(flashcards_text):
 
 
 
-def split_into_chunks(text, chunk_size=1000):
+def split_into_chunks(text, chunk_size=1000, overlap = 200):
+    if overlap >= chunk_size:
+        raise ValueError("Overlap must be smaller than chunk size.")
+    
     chunks = []
+    start = 0
 
-    for start in range(0, len(text), chunk_size):
-        chunk = text[start:start+chunk_size]
+    while start < len(text):
+        end = start + chunk_size
+        chunk = text[start:end]
         chunks.append(chunk)
 
+        start+= chunk_size - overlap
+
     return chunks
+
+
 
 def retrieve_relevant_chunks(notes, question, top_k = 3):
     chunks = split_into_chunks(notes)
@@ -210,8 +219,11 @@ def retrieve_relevant_chunks(notes, question, top_k = 3):
         score = 0
 
         for word in question_words:
-            if word in chunk_lower:
-                score += 1
+            score += chunk_lower.count(word)
+
+        question_phrase = " ".join(question_words)
+        if question_phrase and question_phrase in chunk_lower:
+            score += 3
 
         scored_chunks.append((score, chunk))
     scored_chunks.sort(key = lambda item: item[0], reverse = True)
